@@ -75,7 +75,7 @@ void printList(node *head)
 	{
 		printf("Found in: %s\n", head->fullWord);
 		printf("On line: %llu\n", head->line);
-		printf("%llu Occurrence\n", head->occurrence);
+		printf("%llu Occurrence\n\n", head->occurrence);
 		printList(head->next);
 	}
 }
@@ -94,26 +94,31 @@ void killList(node** head)
 
 char* backAndForth(char word[], char subString[], char mainString[])
 {
-	long long mainStringLen = strlen(mainString);  // using int could have caused "loss of data"
-	long long subStringLen = strlen(subString);    // according to the compiler
-	long long index = mainStringLen - subStringLen - 1;
+	long long mainStringLen = strlen(mainString);
+	long long subStringLen = strlen(subString);
+	long long index = mainStringLen - subStringLen;
 	long long startIndex = 0;
 	long long endIndex = 0;
+	long long size = 0;
 	for (long long i = index; i >= 0 && mainString[i] != ' '; i--)
 		startIndex = i;
 	for (long long i = index; i <= mainStringLen && mainString[i] != ' '; i++)
 		endIndex = i;
-	long long size = endIndex - startIndex;
-	char* output = malloc((size + 1) * sizeof(char));
-	if (output == NULL)
+	char* output = NULL;
+	for (long long j = 0, i = startIndex; i <= endIndex && mainString[i] != '\n'; i++, j++)
 	{
-		printf("Error: malloc function failed");
+		size++;
+		if(j == 0)
+			output = malloc(size+1 * sizeof(char)); // +1 due to the \0 character necessary for each string
+		else
+			output = realloc(output, (size+1) * sizeof(char));
+		if (output == NULL)
+		{
+			printf("Error: malloc function failed");
+		}
+		output[j] = mainString[i];
 	}
-	else
-	{
-		strncpy(output, &mainString[startIndex], endIndex - startIndex);
-		output[endIndex] = '\0';
-	}
+	output[size] = '\0';
 	return output;
 	
 }
@@ -160,16 +165,13 @@ void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned shor
 		printf("\nError: File not found\n");
 		return;
 	}
-	//while (fscanf(input, "%s", line) != EOF)
 	while(fgets(line, MAX_LEN, input))
 	{
 		
 		if (strstr(line, "\n") != NULL)
 			lineNumber++;
-		printf("\n %llu --------------> %s\n", lineNumber, line);
 		findOccurrences(keyWord, line, line, &head, &tail, lineNumber, &occurrence);
 		printList(head);
-		// output occurrences
 		killList(&head);
 	}
 		
