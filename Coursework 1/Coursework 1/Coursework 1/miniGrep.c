@@ -4,7 +4,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define MIN_ARGS 2
 #define MAX_ARGS 8
-#define MAX_LEN 1024
+#define MAX_LEN 1
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 #include <stdio.h>
@@ -138,45 +138,76 @@ void findOccurrences(char word[], char mainString[], char buffer[], node** head,
 }
 
 
-void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned short mode, unsigned short caseSensitive)
+void getFiles(unsigned short mode, char inputName[], char outputName[], FILE** input, FILE** output)
 {
-	char line[MAX_LEN];  //TODO improve
-	unsigned long long lineNumber = 0;
-	unsigned long long occurrence = 0;
-	node *head = NULL;
-	node *tail = NULL;
-	FILE * input = stdin;
-	FILE * output = stdout;
-
 	switch(mode)
 	{
 	case 3:
 	case 2:
-		output = fopen(outputName, "w");
+		*output = fopen(outputName, "w");
 		if (mode == 2)
 			break;
 	case 1:
-		input = fopen(inputName, "r");
+		*input = fopen(inputName, "r");
 	}
 	if (output == NULL || input == NULL)
 	{
 		printf("\nError: File not found\n");
 		return;
 	}
-	while(fgets(line, MAX_LEN, input))
+}
+
+void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned short mode, unsigned short caseSensitive, FILE* input, FILE* output)
+{
+	unsigned long long len;
+	unsigned long long lineNumber = 0;
+	unsigned long long occurrence = 0;
+	node *head = NULL;
+	node *tail = NULL;
+
+	char *buffer = NULL;
+	/*while (fgets(buffer, MAX_LEN, input))
 	{
-		
-		if (strstr(line, "\n") != NULL)
+
+		if (strstr(buffer, "\n") != NULL)
 			lineNumber++;
-		findOccurrences(keyWord, line, line, &head, &tail, lineNumber, &occurrence);
+		findOccurrences(keyWord, buffer, buffer, &head, &tail, lineNumber, &occurrence);
 		printList(head);
 		killList(&head);
+	}*/
+	while (!feof(input))
+	{
+		buffer = malloc(MAX_LEN + 1 * sizeof(char));
+		len = 0;
+		if (buffer == NULL)
+		{
+			printf("Allocation failed.\n");
+			return;
+		}
+		while (buffer[len] = getc(input))
+		{
+			if (buffer[len] == '\n')
+				lineNumber++;
+			if (buffer[len] == '\n' || (len >= MAX_LEN && buffer[len] == ' ') || buffer[len] == EOF)
+				break;
+			len++;
+			if (len >= MAX_LEN)
+			{
+				buffer = realloc(buffer, len + 1 * sizeof(char));
+				if (buffer == NULL)
+				{
+					printf("Allocation failed\n");
+					return;
+				}
+			}
+		}
+		buffer[len] = '\0';
+		printf("\n %llu ------> %s\n",lineNumber, buffer);
+		//findOccurrences(keyWord, buffer, buffer, &head, &tail, lineNumber, &occurrence);
+		//printList(head);
+		killList(&head);
+		free(buffer);
 	}
-		
-	if(input != stdin)
-		fclose(input);
-	if(output != stdout)
-		fclose(output);
 }
 
 
@@ -192,7 +223,8 @@ int main(int argc, char *argv[])
 	char inputName[MAX_LEN]; //input file if any
 	char outputName[MAX_LEN]; //output file if any
 	char keyWord[MAX_LEN];  // the string to look for
-	
+	FILE * input = stdin;
+	FILE * output = stdout;
 
 	if (argc < MIN_ARGS)
 	{
@@ -202,7 +234,12 @@ int main(int argc, char *argv[])
 
 	strcpy(keyWord, argv[1]);
 	setMode(&modeSettings, inputName, outputName, &caseSensitive, argc, argv);
-	grepLoop(keyWord, inputName, outputName, modeSettings, caseSensitive);
+	getFiles(modeSettings, inputName, outputName, &input, &output);
+	grepLoop(keyWord, inputName, outputName, modeSettings, caseSensitive, input, output);
+	if (input != stdin)
+		fclose(input);
+	if (output != stdout)
+		fclose(output);
 
 	// ------------------------- Tests
 
