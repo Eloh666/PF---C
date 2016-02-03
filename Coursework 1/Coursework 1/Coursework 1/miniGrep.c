@@ -92,7 +92,7 @@ void killList(node** head)
 	}
 }
 
-char* backAndForth(char word[], char subString[], char mainString[])
+void backAndForth(char word[], char subString[], char mainString[], node** head, node** tail, unsigned long long lineNumber, unsigned long long *occurrence)
 {
 	long long mainStringLen = strlen(mainString);
 	long long subStringLen = strlen(subString);
@@ -119,8 +119,8 @@ char* backAndForth(char word[], char subString[], char mainString[])
 		output[j] = mainString[i];
 	}
 	output[size] = '\0';
-	return output;
-	
+	buildList(head, tail, lineNumber, *occurrence, word, output);	
+	free(output);
 }
 
 
@@ -131,10 +131,8 @@ void findOccurrences(char word[], char mainString[], char buffer[], node** head,
 	if (temp != NULL)
 	{
 		(*occurrence)++;
-		char *output = backAndForth(word, temp, buffer);
-		buildList(head, tail, lineNumber, *occurrence, word, output);
+		backAndForth(word, temp, buffer, head, tail, lineNumber, occurrence);
 		strcpy(other, &temp[strlen(word)]);
-		free(output);
 		findOccurrences(word, other, buffer, head, tail, lineNumber, occurrence);
 	}
 }
@@ -175,9 +173,10 @@ void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned shor
 		killList(&head);
 	}
 		
-
-	//fclose(input);
-	//fclose(output);
+	if(input != stdin)
+		fclose(input);
+	if(output != stdout)
+		fclose(output);
 }
 
 
