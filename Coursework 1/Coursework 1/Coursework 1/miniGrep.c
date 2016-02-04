@@ -159,59 +159,45 @@ void getFiles(unsigned short mode, char inputName[], char outputName[], FILE** i
 
 void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned short mode, unsigned short caseSensitive, FILE* input, FILE* output)
 {
-	unsigned long long len;
+	int len;
 	unsigned long long lineNumber = 0;
 	unsigned long long occurrence = 0;
 	node *head = NULL;
 	node *tail = NULL;
+	char *buffer;
 
-	char *buffer = NULL;
-	/*while (fgets(buffer, MAX_LEN, input))
-	{
-
-		if (strstr(buffer, "\n") != NULL)
-			lineNumber++;
-		findOccurrences(keyWord, buffer, buffer, &head, &tail, lineNumber, &occurrence);
-		printList(head);
-		killList(&head);
-	}*/
 	while (!feof(input))
 	{
-		buffer = malloc(MAX_LEN + 1 * sizeof(char));
+		buffer = malloc(1 + 1 * sizeof(char));
 		len = 0;
 		if (buffer == NULL)
 		{
 			printf("Allocation failed.\n");
 			return;
 		}
-		while (buffer[len] = getc(input))
+		while (EOF != (buffer[len] = fgetc(input)) && buffer[len] != '\n' && buffer[len] != ' ')
 		{
-			if (buffer[len] == '\n')
-				lineNumber++;
-			if (buffer[len] == '\n' || (len >= MAX_LEN && buffer[len] == ' ') || buffer[len] == EOF)
-				break;
 			len++;
-			if (len >= MAX_LEN)
+			buffer = realloc(buffer, (len + 2) * sizeof(char));
+			if (buffer == NULL)
 			{
-				buffer = realloc(buffer, len + 1 * sizeof(char));
-				if (buffer == NULL)
-				{
-					printf("Allocation failed\n");
-					return;
-				}
+				printf("Allocation failed\n");
+				return;
 			}
 		}
+		//if (buffer[len - 1] == '\n')
+			//lineNumber++;
 		buffer[len] = '\0';
 		printf("\n %llu ------> %s\n",lineNumber, buffer);
 		//findOccurrences(keyWord, buffer, buffer, &head, &tail, lineNumber, &occurrence);
 		//printList(head);
-		killList(&head);
-		free(buffer);
+		//killList(&head);
+		//free(buffer);
 	}
 }
 
 
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
 	unsigned short modeSettings = 0; // chosen modality of the function
 									 // 0 == no io files selected
@@ -236,17 +222,10 @@ int main(int argc, char *argv[])
 	setMode(&modeSettings, inputName, outputName, &caseSensitive, argc, argv);
 	getFiles(modeSettings, inputName, outputName, &input, &output);
 	grepLoop(keyWord, inputName, outputName, modeSettings, caseSensitive, input, output);
+	
 	if (input != stdin)
 		fclose(input);
 	if (output != stdout)
 		fclose(output);
-
-	// ------------------------- Tests
-
-	printf("\nDone\n");
-
-	// -------------------------
-
-	return 0;
 
 }
