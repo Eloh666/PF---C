@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 void setMode(unsigned short *status, char inputName[], char outputName[], unsigned short *caseSensitive, int argc, char *argv[]) // sets the status && the input/output
 {
 	int flagI = 0;
@@ -42,26 +41,47 @@ void setMode(unsigned short *status, char inputName[], char outputName[], unsign
 	}
 }
 
-void findOccurrencesPrime(char word[], char mainString[], char buffer[], unsigned long long lineNumber, unsigned long long *occurrence)
+int isSubString(char * mainString, char * subString, int index)
 {
-	mainString = strstr(mainString, word);
-	if (mainString != NULL)
+	int mainLen = strlen(mainString);
+	int subLen = strlen(subString);
+	int notFound = 1;
+	int endIndex = -1;
+	for (int i = index, j = 0; i < mainLen && notFound && (mainLen - i) >= (subLen - j); i++)
+	{
+		if (mainString[i] == subString[j] && (mainLen - i) >= (subLen - j))
+			j++;
+		else if (j >= subLen)
+		{
+			notFound = 0;
+			endIndex = i;
+		}
+		else
+			j = 0;
+	}
+	if (notFound)
+		return 0;
+	else
+		return endIndex;
+}
+
+void findOccurrencesPrime(char word[], char mainString[], unsigned int lineNumber, unsigned int *occurrence, int index)
+{
+	int newIndex = isSubString(mainString, word, index);
+	if (newIndex)
 	{
 		(*occurrence)++;
-		printf("\n buffer -----> %s", buffer); //Call output
-		printf("\n mainString -----> %s\n", mainString); //Call output
-		strcpy(mainString, &mainString[strlen(word)]);
-		findOccurrencesPrime(word, mainString, buffer, lineNumber, occurrence);
+		printf("\n -------> FOUND! : %s\n", mainString);
+		findOccurrencesPrime(word, mainString, lineNumber, occurrence, newIndex);
 	}
 }
 
-void findOccurrences(char word[], char mainString[], char buffer[], unsigned long long lineNumber, unsigned long long *occurrence)
+void findOccurrences(char word[], char mainString[], unsigned int lineNumber, unsigned int *occurrence)
 {
-	char *temp = malloc(strlen(mainString)*sizeof(char));
-	strcpy(temp, mainString);
-	findOccurrencesPrime(word, temp, buffer, lineNumber, occurrence);
-	//free(temp);
+	findOccurrencesPrime(word, mainString, lineNumber, occurrence, 0);
 }
+
+
 
 void getFiles(unsigned short mode, char inputName[], char outputName[], FILE** input, FILE** output)
 {
@@ -85,8 +105,8 @@ void getFiles(unsigned short mode, char inputName[], char outputName[], FILE** i
 void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned short mode, unsigned short caseSensitive, FILE* input, FILE* output)
 {
 	int len;
-	unsigned long long lineNumber = 1;
-	unsigned long long occurrence = 0;
+	unsigned int lineNumber = 1;
+	unsigned int occurrence = 0;
 	char *buffer;
 	unsigned short newLineFound = 0;
 
@@ -121,8 +141,7 @@ void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned shor
 			}
 		}
 		buffer[len] = '\0';
-		printf("------> %llu %s\n", lineNumber, buffer);
-		findOccurrences(keyWord, buffer, buffer, lineNumber, &occurrence);
+		findOccurrences(keyWord, buffer, lineNumber, &occurrence);
 		free(buffer);
 	}
 }
@@ -142,7 +161,7 @@ int main(int argc, char *argv[])
 	char keyWord[MAX_LEN];  // the string to look for
 	FILE * input = stdin;
 	FILE * output = stdout;
-
+	
 	if (argc < MIN_ARGS)
 	{
 		printf("\nError: the command requires at least 1 argument.\n");
