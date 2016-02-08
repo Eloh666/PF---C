@@ -23,6 +23,7 @@ typedef struct minigrep   // the struct that holds the data of the given command
 								3 == both selected */
 
 	int notCaseSensitive; // -c 0 = no, 1 = yes
+	int endless; // if set, it will require infinite lines from stdin
 	char word[MAX_LEN]; // the word to look for
 	char inputFileName[MAX_LEN]; // given input file name
 	char outputFileName[MAX_LEN]; // given output file name
@@ -71,6 +72,8 @@ void setMode(commandData *grepData, int argc, char *argv[]) /*
 		}
 		if (strcmp("-c", argv[i]) == 0 && !flagO)          // check for -c given
 			grepData->notCaseSensitive = 1;
+		if (strcmp("-e", argv[i]) == 0 && !flagO)          // check for -c given
+			grepData->endless = 1;
 	}
 }
 
@@ -81,8 +84,8 @@ void setMode(commandData *grepData, int argc, char *argv[]) /*
 */
 int isSubString(char * mainString, char * subString, int index, int notCaseSensitive)
 {
-	int mainLen = strlen(mainString);                   // size of the mainString
-	int subLen = strlen(subString);                     // size of the subString
+	size_t mainLen = strlen(mainString);                   // size of the mainString
+	size_t subLen = strlen(subString);                     // size of the subString
 
 	if (subLen > mainLen)
 		return -1;
@@ -176,6 +179,8 @@ void grepLoop(commandData *grepData)
 	{
 		if(newLineFound)
 		{
+			if (grepData->inputFile == stdin && !grepData->endless)
+				break;
 			lineNumber++;
 			newLineFound = 0;
 		}
@@ -232,6 +237,7 @@ int main(int argc, char *argv[])
 	// sets the default options
 	grepData->mode = 0;
 	grepData->notCaseSensitive = 0;
+	grepData->endless = 0;
 	grepData->inputFile = stdin;
 	grepData->outputFile = stdout;
 	strcpy(grepData->word, argv[1]);
