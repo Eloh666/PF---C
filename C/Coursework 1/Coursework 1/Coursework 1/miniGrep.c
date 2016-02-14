@@ -1,231 +1,172 @@
-// Coursework 1.cpp : Defines the entry point for the console application.
-//
+/*  Davide Maurilio Morello - Matric Number 40219838 - Computing Science
+	More information regarding the complexity or other choices can be found
+	in the report.
+*/
 
-#define _CRT_SECURE_NO_WARNINGS
-#define MIN_ARGS 2
-#define MAX_ARGS 8
-#define MAX_LEN 1
-#define MIN(a,b) (((a)<(b))?(a):(b))
+#define _CRT_SECURE_NO_WARNINGS // VS2015 setting to use fopen instead of fopen_s
+#define MAX_LEN 255 // size of the reading buffer
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include "commandDataInit.h"
+#include "stringFuncs.h"
 
-typedef struct nod
-{
-	char fullWord[MAX_LEN];
-	unsigned long long line;
-	unsigned long long occurrence;
-	struct nod *next;
-} node;
 
-node *newnode(void)
+/*
+	writes to output file or stdout
+*/
+
+void outputData(commandData *grepData, unsigned int lineNumber, unsigned int occurrence, char mainString[])
 {
-	return (node *)malloc(sizeof(node));
+	fprintf(grepData->outputFile, "\nWord ''%s'' found: \n",grepData->word);
+	fprintf(grepData->outputFile, "Occurrence %d found on line %d\n", occurrence, lineNumber);
+	fprintf(grepData->outputFile, "String found inside word ''%s'' \n\n", mainString);
 }
 
-void setMode(unsigned short *status, char inputName[], char outputName[], unsigned short *caseSensitive, int argc, char *argv[]) // sets the status && the input/output
+/*
+	Prints help information
+*/
+
+void printHelp()
 {
-	int flagI = 0;
-	int flagO = 0;
-	int ceil = MIN(argc, MAX_ARGS);
-	for (int i = MIN_ARGS; i < ceil; i++)
-	{
-		if (strcmp("-i", argv[i]) == 0 && !flagI)
-		{
-			flagI = 1;
-			*status = (*status) + 1;
-			if (i + 1 < ceil)
-			{
-				strcpy(inputName, argv[i + 1]);
-			}
-		}
-		if (strcmp("-o", argv[i]) == 0 && !flagO)
-		{
-			flagO = 1;
-			*status = (*status) + 2;
-			if (i + 1 < ceil)
-			{
-				strcpy(outputName, argv[i + 1]);
-			}
-		}
-		if (strcmp("-c", argv[i]) == 0 && !flagO)
-			*caseSensitive = 1;
-	}
+	printf("\nGeneral structure: miniGrep string -i input -o output\n\n");
+	printf("INPUT CONTROL\n\n");
+	printf("-i fileName        if not set, stdin (console input) will be used\n\n");
+	printf("OUTPUT CONTROL\n\n");
+	printf("-o fileName        if not set, stdout (console output) will be used\n\n");
+	printf("OTHER SETTINGS\n\n");
+	printf("-c the research is NON case sensitive\n");
+	printf("-e endless mode, the command will ask for infinite input if STDIN is set as input source\n");
+	printf("--h displays command information\n");
 }
 
-void buildList(node** head, node** tail, unsigned long long lineNumber, unsigned long long occurrence, char word[], char fullWord[])
+/*
+	The functioncalled by the caller "findOccurrences" recursively checks a string from a given index for the occurrence of a
+	given substring, if it finds one, prints the occurrence.
+*/
+void findOccurrencesPrime(commandData *grepData, char mainString[], unsigned int lineNumber, unsigned int *occurrence, int index)
 {
-	node *p = NULL;
-	p = newnode();
-	strcpy(p->fullWord, fullWord);
-	p->line = lineNumber;
-	p->occurrence = occurrence;
-	p->next = NULL;
-	if (*head == NULL)
-		*head = p;
-	else
-		(*tail)->next = p;
-	*tail = p;
-}
-
-void printList(node *head)
-{
-	if (head != NULL)
-	{
-		printf("Found in: %s\n", head->fullWord);
-		printf("On line: %llu\n", head->line);
-		printf("%llu Occurrence\n\n", head->occurrence);
-		printList(head->next);
-	}
-}
-
-
-void killList(node** head)
-{
-	node* p = NULL;
-	while(*head != NULL)
-	{
-		p = *head;
-		*head = (*head)->next;
-		free(p);
-	}
-}
-
-void backAndForth(char word[], char subString[], char mainString[], node** head, node** tail, unsigned long long lineNumber, unsigned long long *occurrence)
-{
-	long long mainStringLen = strlen(mainString);
-	long long subStringLen = strlen(subString);
-	long long index = mainStringLen - subStringLen;
-	long long startIndex = 0;
-	long long endIndex = 0;
-	long long size = 0;
-	for (long long i = index; i >= 0 && mainString[i] != ' '; i--)
-		startIndex = i;
-	for (long long i = index; i <= mainStringLen && mainString[i] != ' '; i++)
-		endIndex = i;
-	char* output = NULL;
-	for (long long j = 0, i = startIndex; i <= endIndex && mainString[i] != '\n'; i++, j++)
-	{
-		size++;
-		if(j == 0)
-			output = malloc(size+1 * sizeof(char)); // +1 due to the \0 character necessary for each string
-		else
-			output = realloc(output, (size+1) * sizeof(char));
-		if (output == NULL)
-		{
-			printf("Error: malloc function failed");
-		}
-		output[j] = mainString[i];
-	}
-	output[size] = '\0';
-	buildList(head, tail, lineNumber, *occurrence, word, output);	
-	free(output);
-}
-
-
-void findOccurrences(char word[], char mainString[], char buffer[], node** head, node** tail, unsigned long long lineNumber, unsigned long long *occurrence)
-{
-	char other[MAX_LEN];  //TODO improve
-	char *temp = strstr(mainString, word);
-	if (temp != NULL)
+	int newIndex = isSubString(mainString, grepData->word, index, grepData->notCaseSensitive);
+	if (newIndex != -1) //if word has been found inside the substring
 	{
 		(*occurrence)++;
-		backAndForth(word, temp, buffer, head, tail, lineNumber, occurrence);
-		strcpy(other, &temp[strlen(word)]);
-		findOccurrences(word, other, buffer, head, tail, lineNumber, occurrence);
+		outputData(grepData, lineNumber, *occurrence, mainString);
+		findOccurrencesPrime(grepData, mainString, lineNumber, occurrence, newIndex);
 	}
 }
 
-
-void getFiles(unsigned short mode, char inputName[], char outputName[], FILE** input, FILE** output)
+/*
+simple caller for the recursive function to start from 0
+*/
+void findOccurrences(commandData *grepData, char mainString[], unsigned int lineNumber, unsigned int *occurrence)
 {
-	switch(mode)
-	{
-	case 3:
-	case 2:
-		*output = fopen(outputName, "w");
-		if (mode == 2)
-			break;
-	case 1:
-		*input = fopen(inputName, "r");
-	}
-	if (output == NULL || input == NULL)
-	{
-		printf("\nError: File not found\n");
-		return;
-	}
+	findOccurrencesPrime(grepData, mainString, lineNumber, occurrence, 0); // more on the CW report
 }
 
-void grepLoop(char keyWord[], char inputName[], char outputName[], unsigned short mode, unsigned short caseSensitive, FILE* input, FILE* output)
+/*
+	Main loop for the command. Reads the file chunking it into substrings, generally single words.
+	Once a chunk has been gathered calls checks wether it contains the string to look for, if it so
+	the string is output according to the chosen output file.
+*/
+
+void grepLoop(commandData *grepData)
 {
-	int len;
-	unsigned long long lineNumber = 0;
-	unsigned long long occurrence = 0;
-	node *head = NULL;
-	node *tail = NULL;
+	int count;
+	int bufferSize;
+	unsigned int lineNumber = 1;
+	unsigned int occurrence = 0;
+	unsigned short newLineFound = 0;
+
 	char *buffer;
 
-	while (!feof(input))
+	if (grepData->inputFile == stdin)
+		printf("\nInsert lines of text, CTRL-C to stop at any time: ");
+	
+	while (!feof(grepData->inputFile))  // goes until the end of the file
 	{
-		buffer = malloc(1 + 1 * sizeof(char));
-		len = 0;
+		if(newLineFound)
+		{
+			if (grepData->inputFile == stdin && !grepData->endless)
+				break;
+			lineNumber++;
+			newLineFound = 0;
+		}
+		bufferSize = MAX_LEN;
+		buffer = malloc(bufferSize + 1 * sizeof(char)); /* allocates the buffer to the starting
+														   buffer size of MAX_LEN + 1 extra space for \0 */
+		count = 0;
 		if (buffer == NULL)
 		{
-			printf("Allocation failed.\n");
+			printf("Allocation failed.\n");     /* returns if any allocation fails */
 			return;
 		}
-		while (EOF != (buffer[len] = fgetc(input)) && buffer[len] != '\n' && buffer[len] != ' ')
+		while (EOF != (buffer[count] = fgetc(grepData->inputFile)) && buffer[count] != ' ')  /*
+																							 reads character 
+																							 until a space or EOF																						 
+																							 */
 		{
-			len++;
-			buffer = realloc(buffer, (len + 2) * sizeof(char));
+			if (buffer[count] == '\n')
+			{
+				newLineFound = 1; // updates the number of current line for the next call if a \n char has been found
+				break;  // breaks if a new line char has been found (more on the CW)
+			}
+			count++;
+			if (count > bufferSize)
+			{
+				bufferSize *= 2;
+				buffer = realloc(buffer, (bufferSize + 1) * sizeof(char));  // doubles the buffer if the file is not over
+			}
 			if (buffer == NULL)
 			{
-				printf("Allocation failed\n");
+				printf("Allocation failed\n"); /* returns if any allocation fails */
 				return;
 			}
 		}
-		//if (buffer[len - 1] == '\n')
-			//lineNumber++;
-		buffer[len] = '\0';
-		printf("\n %llu ------> %s\n",lineNumber, buffer);
-		//findOccurrences(keyWord, buffer, buffer, &head, &tail, lineNumber, &occurrence);
-		//printList(head);
-		//killList(&head);
-		//free(buffer);
+		buffer[count] = '\0'; // ends the string with a \0 character
+		findOccurrences(grepData, buffer, lineNumber, &occurrence); // calls the string checker function
+		free(buffer);
 	}
 }
 
-
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-	unsigned short modeSettings = 0; // chosen modality of the function
-									 // 0 == no io files selected
-									 // 1 == only input
-									 // 2 == only output
-									 // 3 == both selected
-	unsigned short caseSensitive = 0;
-
-	char inputName[MAX_LEN]; //input file if any
-	char outputName[MAX_LEN]; //output file if any
-	char keyWord[MAX_LEN];  // the string to look for
-	FILE * input = stdin;
-	FILE * output = stdout;
-
+	/*
+		To work the commands needs at least 1 word to look for as first argument, if not given, returns an error.
+	*/
 	if (argc < MIN_ARGS)
 	{
 		printf("\nError: the command requires at least 1 argument.\n");
 		return -1;
 	}
 
-	strcpy(keyWord, argv[1]);
-	setMode(&modeSettings, inputName, outputName, &caseSensitive, argc, argv);
-	getFiles(modeSettings, inputName, outputName, &input, &output);
-	grepLoop(keyWord, inputName, outputName, modeSettings, caseSensitive, input, output);
-	
-	if (input != stdin)
-		fclose(input);
-	if (output != stdout)
-		fclose(output);
+	commandData *grepData = malloc(sizeof(commandData)); // initialise the structure to hold the command data
+	initCommand(grepData, argc, argv);  // sets the options based on the arguments
 
+	if (grepData->help == 1)
+	{
+		printHelp();
+		return 0;
+		
+	}
+
+	if (grepData->outputFile == NULL || grepData->inputFile == NULL) // returns an error if there a problem opening any of the files
+	{
+		printf("\nError: File not found\n");
+		return -1;
+	}
+	
+	printf("\n");  // unecessary prints just to make everything look tidier
+	grepLoop(grepData);
+	printf("\n");
+
+
+
+	if (grepData->inputFile != stdin)  // closes files if != default options
+		fclose(grepData->inputFile);
+	if (grepData->outputFile != stdout)
+		fclose(grepData->outputFile);
+
+	return 0;
 }
