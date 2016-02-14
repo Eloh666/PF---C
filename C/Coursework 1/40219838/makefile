@@ -26,7 +26,7 @@ longStringDemo:
 	output.txt	
 	
 defaultDemo:
-	miniGrep bored
+	miniGrep e
 
 endlessDemo:
-	miniGrep abc -e
+	miniGrep e -e
