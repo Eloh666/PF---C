@@ -91,6 +91,12 @@ void initCommand(commandData *grepData, int argc, char *argv[]) /*
 			{
 				strcpy(grepData->inputFileName, argv[i + 1]);
 			}
+			else
+			{
+				printf("Error: no filename given! See help for more information: \n");
+				grepData->help = 1;
+				return;	
+			}
 		}
 		if (!strcmp("-o", argv[i]) && !flagO)           // check for output given
 		{
@@ -99,6 +105,12 @@ void initCommand(commandData *grepData, int argc, char *argv[]) /*
 			if (i + 1 < ceil)
 			{
 				strcpy(grepData->outputFileName, argv[i + 1]);
+			}
+			else
+			{
+				printf("Error: no filename given! See help for more information: \n");
+				grepData->help = 1;
+				return;
 			}
 		}
 		if (!strcmp("-c", argv[i]))          // check for -c given

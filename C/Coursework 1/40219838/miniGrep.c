@@ -94,7 +94,7 @@ void grepLoop(commandData *grepData)
 			newLineFound = 0;
 		}
 		bufferSize = MAX_LEN;
-		buffer = malloc(bufferSize + 1 * sizeof(char)); /* allocates the buffer to the starting
+		buffer = (char*) malloc(bufferSize + 1 * sizeof(char)); /* allocates the buffer to the starting
 														   buffer size of MAX_LEN + 1 extra space for \0 */
 		count = 0;
 		if (buffer == NULL)
@@ -116,7 +116,7 @@ void grepLoop(commandData *grepData)
 			if (count > bufferSize)
 			{
 				bufferSize *= 2;
-				buffer = realloc(buffer, (bufferSize + 1) * sizeof(char));  // doubles the buffer if the file is not over
+				buffer = (char*) realloc(buffer, (bufferSize + 1) * sizeof(char));  // doubles the buffer if the file is not over
 			}
 			if (buffer == NULL)
 			{
@@ -127,6 +127,7 @@ void grepLoop(commandData *grepData)
 		buffer[count] = '\0'; // ends the string with a \0 character
 		findOccurrences(grepData, buffer, lineNumber, &occurrence); // calls the string checker function
 		free(buffer);
+		buffer = 0;
 	}
 }
 
