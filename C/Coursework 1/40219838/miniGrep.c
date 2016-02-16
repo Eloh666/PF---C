@@ -168,6 +168,9 @@ int main(int argc, char *argv[])
 		fclose(grepData->inputFile);
 	if (grepData->outputFile != stdout)
 		fclose(grepData->outputFile);
+		
+	free(grepData);
+	grepData = 0;
 
 	return 0;
 }
