@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	commandData *grepData = malloc(sizeof(commandData)); // initialise the structure to hold the command data
+	commandData *grepData = (commandData*) malloc(sizeof(commandData)); // initialise the structure to hold the command data
 	initCommand(grepData, argc, argv);  // sets the options based on the arguments
 
 	if (grepData->help == 1)
