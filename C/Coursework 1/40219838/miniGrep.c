@@ -38,7 +38,7 @@ void printHelp()
 	printf("-o fileName        if not set, stdout (console output) will be used\n\n");
 	printf("OTHER SETTINGS\n\n");
 	printf("-c the research is NON case sensitive\n");
-	printf("-e endless mode, the command will ask for infinite input if STDIN is set as input source\n");
+	printf("-e one input mode, useful if -i is not set, for the command to ask for only one input\n");
 	printf("--h displays command information\n");
 }
 
@@ -80,15 +80,12 @@ void grepLoop(commandData *grepData)
 	unsigned short newLineFound = 0;
 
 	char *buffer;
-
-	if (grepData->inputFile == stdin)
-		printf("\nInsert lines of text, CTRL-C to stop at any time: ");
 	
 	while (!feof(grepData->inputFile))  // goes until the end of the file
 	{
 		if(newLineFound)
 		{
-			if (grepData->inputFile == stdin && !grepData->endless)
+			if (grepData->inputFile == stdin && grepData->endAfterOne)
 				break;
 			lineNumber++;
 			newLineFound = 0;

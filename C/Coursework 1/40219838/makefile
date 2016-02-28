@@ -30,3 +30,6 @@ defaultDemo:
 
 endlessDemo:
 	miniGrep e -e
+	
+pipeInDemo:
+	dir | minigrep *.txt -o | more

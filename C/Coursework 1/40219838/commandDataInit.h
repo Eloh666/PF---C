@@ -25,7 +25,7 @@ typedef struct minigrep   // the struct that holds the data of the given command
 
 	int notCaseSensitive; // -c 0 = no, 1 = yes
 	int help; // -c 0 = no, 1 = yes
-	int endless; // if set, it will require infinite lines from stdin
+	int endAfterOne; // if set, it will look at only one string from the stdin
 	char word[MAX_LEN]; // the word to look for
 	char inputFileName[MAX_LEN]; // given input file name
 	char outputFileName[MAX_LEN]; // given output file name
@@ -41,7 +41,7 @@ void comDataDefaultInit(commandData * grepData, char word[])
 {
 	grepData->mode = 0;
 	grepData->notCaseSensitive = 0;
-	grepData->endless = 0;
+	grepData->endAfterOne = 0;
 	grepData->inputFile = stdin;
 	grepData->outputFile = stdout;
 	strcpy(grepData->word, word);
@@ -119,7 +119,7 @@ void initCommand(commandData *grepData, int argc, char *argv[]) /*
 		}
 		if (!strcmp("-e", argv[i]))          // check for -e given
 		{
-			grepData->endless = 1;
+			grepData->endAfterOne = 1;
 		}
 		if (!strcmp("--h", argv[i]))          // check for -h given
 		{
