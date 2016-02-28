@@ -1,3 +1,2 @@
 ﻿  BinaryTree.cpp
-c:\users\eloh\documents\github\programmingfundamentals\c++\binarytree\binarytree\binarytree.cpp(109): warning C4101: 'searchValue': unreferenced local variable
   BinaryTree.vcxproj -> C:\Users\Eloh\Documents\GitHub\ProgrammingFundamentals\C++\BinaryTree\Debug\BinaryTree.exe

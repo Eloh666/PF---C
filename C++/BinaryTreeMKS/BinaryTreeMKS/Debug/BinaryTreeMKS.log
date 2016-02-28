@@ -1,0 +1,3 @@
+﻿  BinaryTreeMKS.cpp
+c:\users\eloh\documents\github\programmingfundamentals\c++\binarytreemks\binarytreemks\binarytreemks.cpp(53): warning C4101: 'searchValue': unreferenced local variable
+  BinaryTreeMKS.vcxproj -> C:\Users\Eloh\Documents\GitHub\ProgrammingFundamentals\C++\BinaryTreeMKS\Debug\BinaryTreeMKS.exe

@@ -5,22 +5,24 @@
 
 #include <iostream>
 #include <memory>
+#define LEFT 0
+#define RIGHT 1
 
 using namespace std;
 
 typedef struct nod
 {
 	int data;
-	struct nod* leftNode;
-	struct nod* rightNode;
+	shared_ptr<struct nod> leftNode;
+	shared_ptr<struct nod> rightNode;
 } node;
 
-void insertNode(node** tree, int value)
+void insertNode(shared_ptr<node>* tree, int value)
 {
 
 	if (*tree == nullptr)
 	{
-		*tree = new node;
+		*tree = make_shared<node>();
 		(*tree)->data = value;
 		(*tree)->leftNode = nullptr;
 		(*tree)->rightNode = nullptr;
@@ -35,7 +37,7 @@ void insertNode(node** tree, int value)
 	}
 }
 
-void printTreeOrder(node* tree)
+void printTreeOrder(shared_ptr<node> tree)
 {
 	if (tree != nullptr)
 	{
@@ -45,7 +47,7 @@ void printTreeOrder(node* tree)
 	}
 }
 
-void printTreeWidth(node * tree)
+void printTreeWidth(shared_ptr<node> tree)
 {
 	if (tree != nullptr)
 	{
@@ -55,17 +57,17 @@ void printTreeWidth(node * tree)
 	}
 }
 
-void cutTree(node ** tree)
+void cutTree(shared_ptr<node>* tree)
 {
 	if (*tree != nullptr)
 	{
 		cutTree(&((*tree)->leftNode));
 		cutTree(&((*tree)->rightNode));
-		delete *tree;
+		*tree = nullptr;
 	}
 }
 
-void printTreePO(node * tree)
+void printTreePO(shared_ptr<node> tree)
 {
 	if (tree != nullptr)
 	{
@@ -75,7 +77,7 @@ void printTreePO(node * tree)
 	}
 }
 
-bool searchTree(node * tree, int value)
+bool searchTree(shared_ptr<node> tree, int value)
 {
 	if (tree != nullptr)
 	{
@@ -90,11 +92,11 @@ bool searchTree(node * tree, int value)
 		return false;
 }
 
-void copyTree(node * sourceTree, node ** destTree)
+void copyTree(shared_ptr<node> sourceTree, shared_ptr<node>* destTree)
 {
 	if (sourceTree != nullptr)
 	{
-		*destTree = new node;
+		*destTree = make_shared<node>();
 		(*destTree)->data = sourceTree->data;
 		(*destTree)->leftNode = nullptr;
 		(*destTree)->rightNode = nullptr;
@@ -103,11 +105,103 @@ void copyTree(node * sourceTree, node ** destTree)
 	}
 }
 
+void delNod(shared_ptr<node> *parentNode, shared_ptr<node> *targetNode, int location)
+{
+		if((*targetNode)->leftNode != nullptr && (*targetNode)->rightNode != nullptr )
+		{
+			auto swapPointer = &((*targetNode)->rightNode);
+			int swapValue;
+			while((*swapPointer)->leftNode != nullptr)
+			{
+				swapPointer = &((*swapPointer)->leftNode);
+			}
+			swapValue = (*swapPointer)->data;
+			if((*swapPointer)->rightNode != nullptr)
+			{
+				(*swapPointer)->data = (*swapPointer)->rightNode->data;
+				(*swapPointer) = (*swapPointer)->rightNode;
+			}
+			else
+			{
+				(*swapPointer) = nullptr;
+			}
+			(*targetNode)->data = swapValue;
+		}
+		else if ((*targetNode)->rightNode == nullptr)
+		{
+			if(parentNode != targetNode)
+			{
+				if (location == LEFT)
+				{
+					(*parentNode)->leftNode = (*targetNode)->leftNode;
+				}
+				else
+				{
+					(*parentNode)->rightNode = (*targetNode)->leftNode;
+				}
+			}
+			else
+			{
+				if (location == LEFT)
+				{
+					(*parentNode) = (*targetNode)->leftNode;
+				}
+				else
+				{
+					(*parentNode) = (*targetNode)->leftNode;
+				}
+			}
+		}
+		else if ((*targetNode)->leftNode == nullptr)
+		{
+			if (parentNode != targetNode)
+			{
+				if (location == LEFT)
+				{
+					(*parentNode)->leftNode = (*targetNode)->rightNode;
+				}
+				else
+				{
+					(*parentNode)->rightNode = (*targetNode)->rightNode;
+				}
+			}
+			else
+			{
+				if (location == LEFT)
+				{
+					(*parentNode) = (*targetNode)->rightNode;
+				}
+				else
+				{
+					(*parentNode) = (*targetNode)->rightNode;
+				}
+			}
+		}
+}
+
+void deleteNode(shared_ptr<node> *parentNode, shared_ptr<node> *targetNode, int value, int location)
+{
+	if(*targetNode != nullptr)
+	{
+		if((*targetNode)->data == value)
+		{
+			delNod(parentNode, targetNode, location);
+			return;
+		}
+		else
+		{
+			deleteNode(targetNode, &((*targetNode)->leftNode), value, LEFT);
+			deleteNode(targetNode, &((*targetNode)->rightNode), value, RIGHT);
+		}
+	}
+}
+
+
 int main()
 {
-	node* tree = nullptr;
+	shared_ptr<node> tree = nullptr;
 	int value, searchValue;
-	for (auto i = 0; i <= 5; i++)
+	for (auto i = 0; i <= 6; i++)
 	{
 		cout << "Insert value for the tree ";
 		cin >> value;
@@ -119,7 +213,6 @@ int main()
 	printTreeWidth(tree);
 	cout << "In Pre-Order: " << endl;
 	printTreePO(tree);
-	/*
 	cout << "Insert value for the tree ";
 	cin >> searchValue;
 	if (searchTree(tree, searchValue))
@@ -129,10 +222,11 @@ int main()
 	else
 	{
 		cout << "Value " << searchValue << " not found." << endl;
-	}*/
+	}
 
-	node *treeCopy = nullptr;
+	shared_ptr<node> treeCopy = nullptr;
 	copyTree(tree, &treeCopy);
+	deleteNode(&treeCopy, &treeCopy, 7, 0);
 	cout << endl;
 	cout << "In order2: " << endl;
 	printTreeOrder(treeCopy);
