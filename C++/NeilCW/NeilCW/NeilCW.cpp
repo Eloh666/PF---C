@@ -28,7 +28,15 @@ void getCoords(string line, string splitOn, vector<double> &results)
 auto calculateDistance(double th1, double ph1, double th2, double ph2)
 {
 	double dx, dy, dz;
-	ph1 -= ph2;	ph1 *= TO_RAD;	th1 *= TO_RAD;	th2 *= TO_RAD;	dz = sin(th1) - sin(th2);	dx = cos(ph1) * cos(th1) - cos(th2);	dy = sin(ph1) * cos(th1);	return (asin(sqrt(dx*dx + dy*dy + dz*dz) / 2) * 2 * R);
+	ph1 -= ph2;
+	ph1 *= TO_RAD;
+	th1 *= TO_RAD;
+	th2 *= TO_RAD;
+	dz = sin(th1) - sin(th2);
+	dx = cos(ph1) * cos(th1) - cos(th2);
+	dy = sin(ph1) * cos(th1);
+
+	return (asin(sqrt(dx*dx + dy*dy + dz*dz) / 2) * 2 * R);
 }
 
 auto distBetweenCoords(vector<double> coords)
@@ -45,11 +53,14 @@ auto distBetweenCoords(vector<double> coords)
 int main()
 {
 	string fileLine;
+	string fileName;
 	vector<double> coordinates;
 	auto firstLine = true;
-	double totalDistance;
+	double totalDistance = 0;
 	ifstream coordinatesFile;
-	coordinatesFile.open("coords.txt");
+	cout << "Please enter the name of the file you want to check for coordinates  ";
+	cin >> fileName;
+	coordinatesFile.open(fileName);
 	if(!coordinatesFile)
 	{
 		cout << "File not found." << endl << endl;
@@ -73,7 +84,10 @@ int main()
 		return -1;
 	}
 
-	totalDistance = distBetweenCoords(coordinates);
+	if(coordinates.size() >= 4)
+	{
+		totalDistance = distBetweenCoords(coordinates);
+	}
 	cout << "The total distance for the journey is: " << totalDistance << "KMs" << endl;
 
 	coordinatesFile.close();
