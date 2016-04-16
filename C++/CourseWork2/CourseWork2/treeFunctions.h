@@ -6,37 +6,12 @@
 #include <vector>
 #include <sstream>
 
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////
-
-void printTreeOrder(node * tree)
-{
-	if (tree != nullptr)
-	{
-		printTreeOrder(tree->left);
-		std::cout << "Node ->" << tree->data << std::endl;
-		printTreeOrder(tree->right);
-	}
-}
-
-/////////////////////////////////////////
-
 inline void insertNode(node ** tree, int value)
 {
 	if (*tree == nullptr)
 	{
 		*tree = new node();
 		(*tree)->data = value;
-		(*tree)->left = nullptr;
-		(*tree)->right = nullptr;
 	}
 	else if ((*tree)->data < value)
 	{
@@ -54,8 +29,6 @@ inline void copyTree(node * sourceTree, node ** destTree)
 	{
 		*destTree = new node();
 		(*destTree)->data = sourceTree->data;
-		(*destTree)->left = nullptr;
-		(*destTree)->right = nullptr;
 		copyTree(sourceTree->left, &((*destTree)->left));
 		copyTree(sourceTree->right, &((*destTree)->right));
 	}
@@ -96,7 +69,7 @@ inline void getValuesPostOrder(node * tree, std::string &results)
 		{
 			results += " ";
 		}
-		results += std::to_string(tree->data);	
+		results += std::to_string(tree->data);
 	}
 }
 
@@ -137,13 +110,13 @@ inline bool binarySearch(node * tree, int value)
 	}
 	else
 	{
-		if(tree->data == value)
+		if (tree->data == value)
 		{
 			return true;
 		}
 		else
 		{
-			if(tree->data > value)
+			if (tree->data > value)
 			{
 				return binarySearch(tree->left, value);
 			}
@@ -157,7 +130,7 @@ inline bool binarySearch(node * tree, int value)
 
 inline node * getLeftmostSon(node * current, node * &parent)
 {
-	if(current->left == nullptr)
+	if (current->left == nullptr)
 	{
 		parent->left = nullptr;
 		return current;
@@ -170,12 +143,12 @@ inline node * getLeftmostSon(node * current, node * &parent)
 	{
 		return getLeftmostSon(current->left, parent->left);
 	}
-	
+
 }
 
 inline void linkRightBranch(node * &current, node * toLink)
 {
-	if(current->right == nullptr)
+	if (current->right == nullptr)
 	{
 		current->right = toLink;
 	}
@@ -187,7 +160,7 @@ inline void linkRightBranch(node * &current, node * toLink)
 
 inline node* deleteNode(node * tree, int value)
 {
-	if(tree == nullptr)
+	if (tree == nullptr)
 	{
 		return tree;
 	}
@@ -202,7 +175,7 @@ inline node* deleteNode(node * tree, int value)
 	else
 	{
 		//all brances are null
-		if(tree->left == nullptr && tree->right == nullptr)
+		if (tree->left == nullptr && tree->right == nullptr)
 		{
 			delete tree;
 			return nullptr;
@@ -227,16 +200,39 @@ inline node* deleteNode(node * tree, int value)
 		else
 		{
 			auto rightLeftMostSon = getLeftmostSon(tree->right, tree->right);
-			if(tree->right != rightLeftMostSon)
+			if (tree->right != rightLeftMostSon)
 			{
 				linkRightBranch(rightLeftMostSon, tree->right);
 			}
 			rightLeftMostSon->left = tree->left;
-			
+
 			delete tree;
 			tree = nullptr;
 			return rightLeftMostSon;
 		}
 	}
 	return tree;
+}
+
+inline bool treeEquality(node * firstTree, node* secondTree)
+{
+	if (firstTree == nullptr && secondTree == nullptr)
+	{
+		return true;
+	}
+	else if (firstTree != nullptr && secondTree != nullptr)
+	{
+		if (firstTree->data == secondTree->data)
+		{
+			return true && treeEquality(firstTree->left, secondTree->left) && treeEquality(firstTree->right, secondTree->right);
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
 }

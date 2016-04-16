@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 int main(int argc, char **argv)
 {
 
@@ -32,7 +31,7 @@ int main(int argc, char **argv)
 		cerr << "ERROR - test 2 failed (single value constructor)" << endl;
 	else
 		cout << "Test 2 passed (single value constructor)" << endl;
-	delete tree;	
+	delete tree;
 
 	// Test 3 - vector constructor
 	tree = new binary_tree(vector<int>{10, 5, 12, 15, 8});
@@ -41,7 +40,7 @@ int main(int argc, char **argv)
 		cerr << "ERROR - test 3 failed (vector constructor)" << endl;
 	else
 		cout << "Test 3 passed (vector constructor)" << endl;
-	
+
 	// Test 4 - copy constructor part 1
 	binary_tree *tree2 = new binary_tree(*tree);
 	str = tree2->inorder();
@@ -70,7 +69,7 @@ int main(int argc, char **argv)
 	else
 		cout << "Test 6 passed (insertion check)" << endl;
 
-	
+
 	// Test 7 - exists check
 	if (tree->exists(4) && tree->exists(15) && !tree->exists(100) && !tree->exists(1))
 		cout << "Test 7 passed (exists check)" << endl;
@@ -110,7 +109,7 @@ int main(int argc, char **argv)
 		cerr << "ERROR - test 11 failed (remove check part 4 - left branch null)" << endl;
 	else
 		cout << "Test 11 passed (remove check part 4 - left branch null)" << endl;
-	
+
 	// Test 12 - remove check part 5
 	tree->remove(10);
 	str = tree->inorder();
@@ -119,8 +118,8 @@ int main(int argc, char **argv)
 	else
 		cout << "Test 12 passed (remove check part 5 - no branches null)" << endl;
 	delete tree;
-	
-	
+
+
 	// Test 13 - preorder print
 	tree = new binary_tree(vector<int>{11, 5, 3, 7});
 	str = tree->preorder();
@@ -145,7 +144,7 @@ int main(int argc, char **argv)
 	else
 		cout << "Test 15 passed (assignment operator)" << endl;
 
-	
+
 	// Test 16 - comparison operator
 	tree2 = new binary_tree(vector<int>{11, 5, 3, 7, 12});
 	if (*tree2 != temp || *tree2 == *tree || *tree == temp)
@@ -183,15 +182,15 @@ int main(int argc, char **argv)
 	else
 		cout << "Test 19 passed (output operator)" << endl;
 	delete tree;
-	
+
 	// Test 20 - input operator
 	stream << " 10" << " 11" << " 10" << " 2" << endl;
 	tree = new binary_tree();
 	stream >> *tree;
 	if (tree->inorder() != string("2 3 4 5 7 10 11"))
-	cerr << "ERROR - test 20 failed (input operator)" << endl;
+		cerr << "ERROR - test 20 failed (input operator)" << endl;
 	else
-	cout << "Test 20 passed (input operator)" << endl;
+		cout << "Test 20 passed (input operator)" << endl;
 	delete tree;
 
 	return 0;

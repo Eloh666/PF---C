@@ -17,13 +17,14 @@ binary_tree::binary_tree()
 // Creates a binary tree with an initial value to store
 binary_tree::binary_tree(int value)
 {
-	insertNode(&tree, value);
+	tree = new node();
+	tree->data = value;
 }
 
 // Creates a binary tree from a collection of existing values
 binary_tree::binary_tree(const std::vector<int> &values)
 {
-	for(auto i : values)
+	for (auto i : values)
 	{
 		insertNode(&tree, i);
 	}
@@ -32,10 +33,7 @@ binary_tree::binary_tree(const std::vector<int> &values)
 // Creates a binary tree by copying an existing tree
 binary_tree::binary_tree(const binary_tree &rhs)
 {
-	for (auto i : getValuesVector(rhs.inorder()," "))
-	{
-		insertNode(&tree, i);
-	}
+	copyTree(rhs.tree, &tree);
 }
 
 // Destroys (cleans up) the tree
@@ -89,49 +87,47 @@ std::string binary_tree::postorder() const
 // Copy assignment operator
 binary_tree& binary_tree::operator=(const binary_tree &other)
 {
-	auto values = getValuesVector(other.inorder(), " ");
-	deleteTree(&tree);
-	for (auto i : values)
-	{
-		insertNode(&tree, i);
-	}
+	this->~binary_tree();
+	copyTree(other.tree, &tree);
 	return *this;
 }
 
 // Checks if two trees are equal
 bool binary_tree::operator==(const binary_tree &other) const
 {
-	return (inorder() == other.inorder()) && (preorder() == other.preorder()) && (postorder() == other.postorder());
+	return treeEquality(tree, other.tree);
 }
 
 // Checks if two trees are not equal
 bool binary_tree::operator!=(const binary_tree &other) const
 {
-	return !(inorder() == other.inorder()) && (preorder() == other.preorder()) && (postorder() == other.postorder());
+	return !treeEquality(tree, other.tree);
 }
 
 // Inserts a new value into the binary tree
 binary_tree& binary_tree::operator+(int value)
 {
-	insertNode(&tree, value);
-	return *this;
+	binary_tree * newTree = new binary_tree(*this);
+	newTree->insert(value);
+	return *newTree;
 }
 
 // Removes a value from the binary tree
 binary_tree& binary_tree::operator-(int value)
 {
-	deleteNode(tree, value);
-	return *this;
+	binary_tree * newTree = new binary_tree(*this);
+	newTree->remove(value);
+	return *newTree;
 }
 
 // Reads in values from an input stream into the tree
 std::istream& operator>>(std::istream &in, binary_tree &value)
 {
-	std::string treeValues(std::istreambuf_iterator<char>(in), {});
-	auto newTreeValues= getValuesVector(treeValues, " ");
-	for(auto i : newTreeValues)
+	int inputValue;
+	while(in)
 	{
-		value.insert(i);
+		in >> inputValue;
+		value.insert(inputValue);
 	}
 	return in;
 }
